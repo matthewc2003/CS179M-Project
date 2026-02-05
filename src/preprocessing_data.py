@@ -2,9 +2,9 @@
 import pandas as pd
 
 # Load Data
-diet_food_day_1 = pd.read_sas('../Data/DR1IFF_L.xpt', format='xport')
-diet_nutrient_day_1 = pd.read_sas('../Data/DR1TOT_L.xpt', format='xport')
-body_measures = pd.read_sas('../Data/BMX_L.xpt', format='xport')
+diet_food_day_1 = pd.read_sas('Data/DR1IFF_L.xpt', format='xport')
+diet_nutrient_day_1 = pd.read_sas('Data/DR1TOT_L.xpt', format='xport')
+body_measures = pd.read_sas('Data/BMX_L.xpt', format='xport')
 
 # Preprocessing diet_nutrient_day_1
 
@@ -26,4 +26,4 @@ body_measures_weight = body_measures[['SEQN', 'BMXWT']].copy()
 body_measures_weight.dropna(subset=['BMXWT'], inplace=True)
 diet_nutrient_day_1 = pd.merge(diet_nutrient_day_1, body_measures_weight, on='SEQN', how='inner')
 
-print(diet_nutrient_day_1.head())
+diet_nutrient_day_1.to_csv("Data/prepro_data/DR1TOT_L.csv", index="False")
