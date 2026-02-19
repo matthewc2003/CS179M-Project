@@ -2,9 +2,9 @@
 import pandas as pd
 
 # Load Data
-diet_food_day_1 = pd.read_sas('Data/DR1IFF_L.xpt', format='xport')
-diet_nutrient_day_1 = pd.read_sas('Data/DR1TOT_L.xpt', format='xport')
-body_measures = pd.read_sas('Data/BMX_L.xpt', format='xport')
+diet_food_day_1 = pd.read_sas('Data/src_data/DR1IFF_L.xpt', format='xport')
+diet_nutrient_day_1 = pd.read_sas('Data/src_data/DR1TOT_L.xpt', format='xport')
+body_measures = pd.read_sas('Data/src_data/BMX_L.xpt', format='xport')
 
 # Preprocessing diet_nutrient_day_1
 
@@ -26,4 +26,9 @@ body_measures_weight = body_measures[['SEQN', 'BMXWT']].copy()
 body_measures_weight.dropna(subset=['BMXWT'], inplace=True)
 diet_nutrient_day_1 = pd.merge(diet_nutrient_day_1, body_measures_weight, on='SEQN', how='inner')
 
-diet_nutrient_day_1.to_csv("Data/prepro_data/DR1TOT_L.csv", index="False")
+# 5. There are a few columns we want to use for our minimal viable product (MVP) model. We will keep those columns and drop the rest.
+cols_to_keep = ['SEQN', 'DR1TKCAL', 'DR1TPROT', 'DR1TCARB', 'DR1TSUGR', 'DR1TFIBE', 'DR1TTFAT', 
+                'DR1TSFAT', 'DR1TMFAT', 'DR1TPFAT', 'DR1TSODI', 'DR1TCALC',
+                'DR1TPOTA', 'DR1TIRON','DR1DRSTZ', 'BMXWT']
+diet_nutrient_day_1 = diet_nutrient_day_1[cols_to_keep]
+diet_nutrient_day_1.to_csv("Data/prepro_data/DR1TOT_L.csv", index=False)
