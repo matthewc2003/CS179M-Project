@@ -32,3 +32,21 @@ cols_to_keep = ['SEQN', 'DR1TKCAL', 'DR1TPROT', 'DR1TCARB', 'DR1TSUGR', 'DR1TFIB
                 'DR1TPOTA', 'DR1TIRON','DR1DRSTZ', 'BMXWT']
 diet_nutrient_day_1 = diet_nutrient_day_1[cols_to_keep]
 diet_nutrient_day_1.to_csv("Data/prepro_data/DR1TOT_L.csv", index=False)
+
+# apply PCA to the DR1TOT_L dataset and keep the top 5 principal components
+from sklearn.decomposition import PCA   
+from sklearn.preprocessing import StandardScaler
+# Standardize the data
+features = diet_nutrient_day_1.drop(columns=['SEQN', 'DR1DRSTZ'])
+features_scaled = StandardScaler().fit_transform(features)
+# Apply PCA
+pca = PCA(n_components=5)
+principal_components = pca.fit_transform(features_scaled)
+# Create a DataFrame with the principal components
+pca_columns = [f'PC{i+1}' for i in range(principal_components.shape[1])]
+pca_df = pd.DataFrame(data=principal_components, columns=pca_columns)
+# Add SEQN and DR1DRSTZ back to the PCA DataFrame
+pca_df['SEQN'] = diet_nutrient_day_1['SEQN'].values
+pca_df['DR1DRSTZ'] = diet_nutrient_day_1['DR1DRSTZ'].values
+# Save the PCA DataFrame to a CSV file
+pca_df.to_csv("Data/prepro_data/DR1TOT_L_PCA.csv", index=False)
