@@ -1,34 +1,82 @@
-# Load Library
 import pandas as pd
+import numpy as np
 
-# Load Data
-diet_food_day_1 = pd.read_sas('Data/src_data/DR1IFF_L.xpt', format='xport')
-diet_nutrient_day_1 = pd.read_sas('Data/src_data/DR1TOT_L.xpt', format='xport')
-body_measures = pd.read_sas('Data/src_data/BMX_L.xpt', format='xport')
 
-# Preprocessing diet_nutrient_day_1
+diet = pd.read_sas('Data/src_data/DR1TOT_L.xpt', format='xport')
+body = pd.read_sas('Data/src_data/BMX_L.xpt', format='xport')
+demo = pd.read_sas('Data/src_data/DEMO_L.xpt', format='xport')
 
-# 1. Only keep data that is reliable and meets the minimum criteria (DR1DRSTZ = 1)
-diet_nutrient_day_1 = diet_nutrient_day_1[diet_nutrient_day_1['DR1DRSTZ'] == 1]
 
-# 2. Drop useless columns
-cols_to_drop = ['DR1EXMER', 'DR1DAY', 'DR1LANG', 'DR1MRESP', 'DR1HELP']
-diet_nutrient_day_1.drop(columns=cols_to_drop, inplace=True, errors='ignore')
+# Only keep first day dietary recall
+diet = diet[diet['DR1DRSTZ'] == 1]
 
-# 3. Drop columns with high missing values
-missing_rate = 0.8
-missing_fractions = diet_nutrient_day_1.isnull().mean()
-cols_to_drop = missing_fractions[missing_fractions > missing_rate].index.tolist()
-diet_nutrient_day_1.drop(columns=cols_to_drop, inplace=True)
+diet_cols = [
+    'SEQN',
+    'WTDRD1',    # Dietary sample weight
+    'DR1TKCAL',   # Calories
+    'DR1TPROT',   # Protein (g)
+    'DR1TSUGR',   # Total sugar (g)
+    'DR1TFIBE',   # Fiber (g)
+    'DR1TSFAT',   # Saturated fat (g)
+    'DR1TSODI'    # Sodium (mg)
+]
 
-# 4. Append BMXWT from BMX_L (Only keep the rows with BMXWT)
-body_measures_weight = body_measures[['SEQN', 'BMXWT']].copy()
-body_measures_weight.dropna(subset=['BMXWT'], inplace=True)
-diet_nutrient_day_1 = pd.merge(diet_nutrient_day_1, body_measures_weight, on='SEQN', how='inner')
+diet = diet[diet_cols]
 
-# 5. There are a few columns we want to use for our minimal viable product (MVP) model. We will keep those columns and drop the rest.
-cols_to_keep = ['SEQN', 'DR1TKCAL', 'DR1TPROT', 'DR1TCARB', 'DR1TSUGR', 'DR1TFIBE', 'DR1TTFAT', 
-                'DR1TSFAT', 'DR1TMFAT', 'DR1TPFAT', 'DR1TSODI', 'DR1TCALC',
-                'DR1TPOTA', 'DR1TIRON','DR1DRSTZ', 'BMXWT']
-diet_nutrient_day_1 = diet_nutrient_day_1[cols_to_keep]
-diet_nutrient_day_1.to_csv("Data/prepro_data/DR1TOT_L.csv", index=False)
+# Drop missing calories and body measurements
+diet = diet.dropna(subset=['DR1TKCAL'])
+body = body[['SEQN', 'BMXWT', 'BMXHT']].dropna()
+
+# Compute BMI
+body['BMI'] = body['BMXWT'] / ((body['BMXHT'] / 100) ** 2)
+
+# Create obesity label
+body['Obese'] = (body['BMI'] >= 30).astype(int)
+
+# Keep only necessary demographic columns and drop missing values
+demo = demo[['SEQN', 'RIDAGEYR', 'RIAGENDR']].dropna()
+
+
+# Rename for clarity
+demo.rename(columns={'RIDAGEYR': 'Age','RIAGENDR': 'Sex'}, inplace=True)
+
+df = diet.merge(body, on='SEQN', how='inner')
+df = df.merge(demo, on='SEQN', how='inner')
+
+# Nutrients per 1000 kcal
+# We compute these to normalize for total calorie intake, which can vary widely between individuals and may mess with the relationship between specific nutreitns and obesity.
+df['Sugar_per_1000kcal'] = df['DR1TSUGR'] / df['DR1TKCAL'] * 1000
+df['Fiber_per_1000kcal'] = df['DR1TFIBE'] / df['DR1TKCAL'] * 1000
+df['Sodium_per_1000kcal'] = df['DR1TSODI'] / df['DR1TKCAL'] * 1000
+df['SatFat_per_1000kcal'] = df['DR1TSFAT'] / df['DR1TKCAL'] * 1000
+df['Protein_per_1000kcal'] = df['DR1TPROT'] / df['DR1TKCAL'] * 1000
+
+
+
+final_cols = [
+    'SEQN',
+    'WTDRD1',
+    'Age',
+    'Sex',
+    'Obese',
+    'DR1TKCAL',
+    'Sugar_per_1000kcal',
+    'Fiber_per_1000kcal',
+    'Sodium_per_1000kcal',
+    'SatFat_per_1000kcal',
+    'Protein_per_1000kcal'
+]
+
+df_final = df[final_cols]
+
+# Remove extreme calorie outliers 
+df_final = df_final[(df_final['DR1TKCAL'] > 500) & (df_final['DR1TKCAL'] < 6000)]
+
+# Drop remaining missing values
+df_final = df_final.dropna()
+
+df_final.to_csv("Data/prepro_data/nhanes_diet_risk.csv", index=False)
+
+# For debugging
+# print("Final dataset shape:", df_final.shape)
+print("Saved to Data/prepro_data/nhanes_diet_risk.csv")
