@@ -3,6 +3,8 @@ import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
+import matplotlib.pyplot as plt
+import seaborn as sns
 import joblib
 
 df = pd.read_pickle("Data/prepro_data/diet_modeling_dataset.pkl")
@@ -84,6 +86,12 @@ for c in np.unique(clusters):
    
 cluster_descriptions = {}
 
+# Right now, we measure threshold from high and low from population means as z-scores of +/- 0.5
+# For a better result, comparison should be on a healhy reference diet, due to 
+# the fact that the average diet in this population may not be healthy.
+
+#TODO : implement comparison to healthy reference diet instead of population mean
+
 for c in cluster_z_profiles:
     high = []
     low = []
@@ -137,9 +145,6 @@ artifact = {
     "scaler": pipeline.named_steps["scaler"]
 }
 
-
-
-
 # This is for diagnostic purposes to evaluate cluster quality
 from sklearn.metrics import silhouette_score
 
@@ -156,6 +161,47 @@ print(df["Cluster"].value_counts().sort_index())
 print("\nWeighted Cluster Distribution:")
 for c, prop in cluster_distribution.items():
     print(f"Cluster {c}: {prop*100:.1f}%")
+
+
+#plot cluster profiles
+# Z-score heatmap (relative to population mean)
+# z_df = pd.DataFrame(cluster_z_profiles).T
+# z_df.index = z_df.index.astype(str)
+
+# plt.figure(figsize=(10, 6))
+# sns.heatmap(
+#     z_df,
+#     annot=True,
+#     cmap="coolwarm",
+#     center=0,
+#     fmt=".2f"
+# )
+# plt.title("Cluster Profiles (Z-Scores Relative to Population Mean)")
+# plt.xlabel("Nutrient Density Features")
+# plt.ylabel("Cluster")
+# plt.tight_layout()
+# plt.show()
+# from sklearn.decomposition import PCA
+
+# pca = PCA(n_components=2)
+# X_pca = pca.fit_transform(X_scaled)
+
+# plt.figure(figsize=(8, 6))
+# sns.scatterplot(
+#     x=X_pca[:, 0],
+#     y=X_pca[:, 1],
+#     hue=clusters,
+#     palette="Set2",
+#     alpha=0.6
+# )
+# plt.title("Dietary Patterns Identified by K-Means (PCA Projection)")
+# plt.xlabel("Principal Component 1")
+# plt.ylabel("Principal Component 2")
+# plt.legend(title="Cluster")
+# plt.tight_layout()
+# plt.show()
+# plot compass plots for each cluster profile
+
 # --------------------------------------------------------
 
 joblib.dump(artifact, "Data/prepro_data/diet_clustering_model.pkl")
