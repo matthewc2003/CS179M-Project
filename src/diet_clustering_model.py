@@ -39,15 +39,18 @@ df["Cluster"] = clusters
 
 # compute weighted cluster distribution for population-level interpretation
 cluster_distribution = {}
+unique_clusters = np.unique(clusters)
+total_weight = np.sum(weights)
 
-for c in np.unique(clusters):
+
+for c in unique_clusters:
     mask = (clusters == c)
-    weighted_prop = np.sum(weights[mask]) / np.sum(weights) # sum of weights in cluster / total sum of weights
+    weighted_prop = np.sum(weights[mask]) / total_weight # sum of weights in cluster / total sum of weights
     cluster_distribution[int(c)] = float(weighted_prop)
 
 cluster_profiles = {}
 
-for c in np.unique(clusters):
+for c in unique_clusters:
     mask = (clusters == c)
     profile = {}
     for feature in cluster_features:
@@ -67,20 +70,22 @@ for feature in cluster_features:
 # Compute cluster z-score profiles (relative to overall mean)
 cluster_z_profiles = {}
 
-for c in np.unique(clusters):
+overall_std = {}
+for features in cluster_features:
+    mean = overall_profile[features]
+    overall_std[features] = np.sqrt(
+        np.average((df[features] - mean) ** 2, weights=weights)
+    )
+
+for c in unique_clusters:
     cluster_z_profiles[c] = {}
 
     for feature in cluster_features:
         cluster_mean = cluster_profiles[c][feature]
         overall_mean = overall_profile[feature]
-        overall_std = np.sqrt(
-            np.average(
-                (df[feature] - overall_mean) ** 2, # variance with weights
-                weights=weights 
-            )
-        )
+        std = overall_std[feature]
 
-        z = (cluster_mean - overall_mean) / overall_std 
+        z = ((cluster_mean - overall_mean) / std) if std != 0 else 0
         cluster_z_profiles[c][feature] = float(z)
      
    
@@ -97,7 +102,7 @@ for c in cluster_z_profiles:
     low = []
 
     for feature, z in cluster_z_profiles[c].items():
-        if z >= 0.5:
+        if z >= 0.5: # A lot of papers use 0.5 as a threshold for meaningful difference, but this is somewhat arbitrary. Future improvement needed
             high.append(feature.replace("_per_1000kcal", ""))
         elif z <= -0.5:
             low.append(feature.replace("_per_1000kcal", ""))

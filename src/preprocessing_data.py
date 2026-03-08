@@ -112,7 +112,7 @@ for col in [
 ]:
     population_percentiles[col] = weighted_percentile(
         df_final[col],
-        [10, 25, 50, 75, 90],
+        [10, 25, 50, 75, 90], # For context, 25-75 are your standard IQR range, and 10/90 gives you tails
         weights
     )
 

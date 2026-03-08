@@ -1,3 +1,4 @@
+from altair import value
 import numpy as np
 import joblib
 import pandas as pd
@@ -72,14 +73,11 @@ def generate_recommendation(
     cluster_pct = cluster_distribution[cluster] * 100
 
     nutrient_values = user_vector.iloc[0].to_dict()
-    percentile_results = {}
-
-    for nutrient, value in nutrient_values.items():
-        percentile_band = get_percentile_position(
-            value,
-            population_percentiles[nutrient]
-        )
-        percentile_results[nutrient] = percentile_band
+    
+    percentile_results = {
+        nutrient: get_percentile_position(value, population_percentiles[nutrient])
+        for nutrient, value in nutrient_values.items()
+    }
 
     advice_lines = []
 
