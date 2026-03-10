@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 from diet_recommendation import generate_recommendation
 import random
 
@@ -25,25 +26,10 @@ st.header("Dietary Screening Questionnaire")
 
 st.markdown("These questions help contextualize intake patterns.")
 
-fruit_freq = st.selectbox(
-    "How often do you consume fruits?",
-    ["Rarely/Never", "1–2 times per week", "3–6 times per week", "Daily"]
-)
+#------------
+# Insert questions here
+#------------
 
-veg_freq = st.selectbox(
-    "How often do you consume vegetables?",
-    ["Rarely/Never", "1–2 times per week", "3–6 times per week", "Daily"]
-)
-
-processed_food = st.selectbox(
-    "How often do you consume highly processed foods?",
-    ["Rarely/Never", "1–2 times per week", "3–6 times per week", "Daily"]
-)
-
-sugary_drinks = st.selectbox(
-    "How often do you consume sugar-sweetened beverages?",
-    ["Rarely/Never", "1–2 times per week", "3–6 times per week", "Daily"]
-)
 
 st.caption(
     "Note: In the final version, questionnaire responses will assist "
@@ -63,7 +49,7 @@ protein = st.number_input("Protein (grams)", min_value=0.0, value=75.0)
 
 st.divider()
 
-if st.button("Generate Personalized Insight"):
+if st.button("Analyze my diet"):
 
     if calories <= 0:
         st.error("Calories must be greater than zero.")
@@ -80,9 +66,6 @@ if st.button("Generate Personalized Insight"):
                 protein_g=protein
             )
 
-
-        st.subheader("Personalized Dietary Pattern Report")
-
 # TODO: Dynamically generate cluster assignment and prevalence based on user's input and the clustering model.
 # IMPORTANT: WE CURRENTLY HARD CODE THE CLUSTER ASSIGNMENT AND PREVALENCE FOR DEMO PURPOSES. IN THE FINAL VERSION, THESE WILL BE DYNAMICALLY GENERATED BASED ON THE USER'S INPUT AND THE CLUSTERING MODEL.
 
@@ -91,9 +74,37 @@ if st.button("Generate Personalized Insight"):
 ### Dietary Pattern Classification
 You most closely resemble **Cluster {result['cluster']} - High Saturated Fat**
 
+
 This pattern represents approximately  
 **{result['cluster_prevalence_percent']:.1f}% of U.S. adults**
         """)
+        
+        st.divider()
+
+        st.markdown("### Your Intake vs Recommended Intake (per 1000 kcal)")
+
+        user_density = {
+            "Sugar": sugar / calories * 1000,
+            "Fiber": fiber / calories * 1000,
+            "Sodium": (sodium / calories * 1000) / 1000, # convert mg to g for better visualization
+            "SatFat": satfat / calories * 1000,
+            "Protein": protein / calories * 1000
+        }
+
+        healthy_density = {
+            "Sugar": 25,     # g per 1000 kcal
+            "Fiber": 14,     # g per 1000 kcal
+            "Sodium": 1.5,   # g per 1000 kcal
+            "SatFat": 10,    # g per 1000 kcal
+            "Protein": 50    # g per 1000 kcal
+        }
+
+        df = pd.DataFrame({
+            "Your Intake (g/1000 kcal)": user_density,
+            "Recommended (g/1000 kcal)": healthy_density
+        })
+
+        st.bar_chart(df)
 
         # st.divider()
 
@@ -126,15 +137,23 @@ This pattern represents approximately
             clean_name = nutrient.replace("_per_1000kcal", "")
             approx_value = percentile_map.get(band, 50)
 
-            st.write(f"**{clean_name}** — {band}")
+            st.write(f"**{clean_name} — {approx_value}th percentile**")
             st.progress(approx_value / 100)
+            
+            if approx_value < 50: #50 is just the median, so anything below that is "lower than average"
+                st.caption(f"You consume less {clean_name.lower()} than about {100 - approx_value}% of U.S. adults.")
+            else:
+                st.caption(f"You consume more {clean_name.lower()} than about {approx_value}% of U.S. adults.")
+    
+    st.divider()
 
-        st.divider()
-
+    st.markdown("### Interpretation Summary")
+    st.write(result["advice_text"])
     st.markdown("### Dietary Recommendations")
 
     recommendations = []
     # TODO: Implement more sophisticated recommendation logic based on cluster characteristics and nutrient positioning. For now, we use simple rules to generate demo recommendations.
+    # I.E. Add better advice
     # Simple rule-based enhancement for demo visuals
     for nutrient, band in result["percentile_comparison"].items():
 
@@ -160,11 +179,6 @@ This pattern represents approximately
 
     for rec in recommendations:
         st.write(f"- {rec}")
-
-    st.divider()
-
-    st.markdown("### Interpretation Summary")
-    st.write(result["advice_text"])
 
     st.caption(
         "This tool provides population-level comparisons only and "

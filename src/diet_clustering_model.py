@@ -50,6 +50,7 @@ for c in unique_clusters:
 
 cluster_profiles = {}
 
+# Compute weighted cluster profiles (mean nutrient densities in each cluster, weighted by survey weights)
 for c in unique_clusters:
     mask = (clusters == c)
     profile = {}
@@ -122,7 +123,6 @@ for c in cluster_z_profiles:
         description = "Near population average"
 
     cluster_descriptions[c] = description
-    
     
 print("\nCluster Interpretations:")
 for c, desc in cluster_descriptions.items():
