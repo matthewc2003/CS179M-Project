@@ -66,13 +66,24 @@ if st.button("Analyze my diet"):
                 protein_g=protein
             )
 
+            if result['cluster'] == 0:
+                cluster_type = "High Sugar, Low Sodium, Low Protein"
+            elif result['cluster'] == 1:
+                cluster_type = "High Saturated Fat"
+            elif result['cluster'] == 2:
+                cluster_type = "High Sodium, High Protein, Low Sugar"
+            elif result['cluster'] == 3:
+                cluster_type = "High Fiber, Low Saturated Fat"
+            else:
+                cluster_type = "Mixed Pattern"
+
 # TODO: Dynamically generate cluster assignment and prevalence based on user's input and the clustering model.
 # IMPORTANT: WE CURRENTLY HARD CODE THE CLUSTER ASSIGNMENT AND PREVALENCE FOR DEMO PURPOSES. IN THE FINAL VERSION, THESE WILL BE DYNAMICALLY GENERATED BASED ON THE USER'S INPUT AND THE CLUSTERING MODEL.
 
         st.markdown(f"""
 
 ### Dietary Pattern Classification
-You most closely resemble **Cluster {result['cluster']} - High Saturated Fat**
+You most closely resemble **Cluster {result['cluster']} - {cluster_type}**
 
 
 This pattern represents approximately  
