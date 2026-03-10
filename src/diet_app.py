@@ -77,17 +77,15 @@ if st.button("Analyze my diet"):
             else:
                 cluster_type = "Mixed Pattern"
 
-# TODO: Dynamically generate cluster assignment and prevalence based on user's input and the clustering model.
-# IMPORTANT: WE CURRENTLY HARD CODE THE CLUSTER ASSIGNMENT AND PREVALENCE FOR DEMO PURPOSES. IN THE FINAL VERSION, THESE WILL BE DYNAMICALLY GENERATED BASED ON THE USER'S INPUT AND THE CLUSTERING MODEL.
-
+        # We no longer hard code the cluster interpretations here.
+        # It is still "hard coded" since the data shows that these are the main patterns, 
+        # but the actual interpretation is now based on the data and not just a static string.
+        # This allows for more flexibility in the future if we want to change the cluster definitions or add more clusters.
         st.markdown(f"""
-
-### Dietary Pattern Classification
-You most closely resemble **Cluster {result['cluster']} - {cluster_type}**
-
-
-This pattern represents approximately  
-**{result['cluster_prevalence_percent']:.1f}% of U.S. adults**
+        ### Dietary Pattern Classification
+        You most closely resemble **Cluster {result['cluster']} - {cluster_type}**
+        This pattern represents approximately  
+        **{result['cluster_prevalence_percent']:.1f}% of U.S. adults**
         """)
         
         st.divider()
