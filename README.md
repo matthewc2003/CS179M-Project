@@ -72,18 +72,19 @@ Most Americans don't know how their diet compares to others and assume their die
 - **Joblib** – saving and loading models/pipelines for data transfer
 
 ## Repository Structure
+```
 CS179M-Project/
-│
+|
 ├── data/           # Datasets used for analysis and clustering
 ├── notebooks/      # Early experimentation and exploratory analysis
 ├── src/            # Main Python scripts and project logic
 └── README.md       # Project documentation
-
+```
 ## Running the App
 1. Install **Python** from https://www.python.org/downloads/
 2. Download or Clone this Repository
 3. Navigate to .../CS179M-Project/src/ and open a terminal
-4. Run the streamlit app with **python3 streamlit -m run diet_app.py**
+4. Run the streamlit app by typing: **python3 streamlit -m run diet_app.py** in the terminal
 5. The app will automatically open in your web browser.
 
 Data Source : https://wwwn.cdc.gov/nchs/nhanes/search/datapage.aspx?Component=Dietary&Cycle=2021-2023
