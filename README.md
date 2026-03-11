@@ -10,16 +10,16 @@ This project uses the **CDC NHANES 2021–2023** cycle and focuses on clustering
 
 1. **Ingests NHANES dietary data** (2021–2023 cycle) and prepares it for analysis.  
 2. **Builds a nutritionally meaningful representation** (e.g., nutrient totals/densities) suitable for distance-based clustering.
-3. **Reduces dimensionality** (PCA) to avoid clustering in 100+ dimensions.
-4. **Clusters individuals into dietary patterns** using **K-means in PCA-reduced nutrient space**, selecting K using elbow + silhouette. 
+3. **Normalizes data** for accurate representation and comparison.
+4. **Clusters individuals into dietary patterns** using **K-means in standardized nutrient space**, selecting K using silhouette score. 
 5. **Interprets clusters** by analyzing centroid nutrient profiles and comparing against public dietary guidance to produce cluster-level “strengths/gaps” and recommendations.
-6. **Assigns a user to a subgroup** by comparing their inputs to the learned clusters and returns tailored suggestions. 
+6. **Assigns a user to a subgroup** by comparing their inputs to the learned clusters and returns data-driven suggestions. 
 
 ---
 
 ## Why dietary patterns (instead of generic advice)?
 
-Common diet guidance is often population-level (“eat more vegetables”) and doesn’t reflect how most individuals actually eat day-to-day. This project aims to discover **population-wide, real eating patterns** and provide **more realistic, pattern-aligned actions**. 
+Most Americans don't know how their diet compares to others and assume their diet is healthier than the average person. This project aims to discover **population-wide, real eating patterns** and provide **more realistic, pattern-aligned actions** alongside **comparisons to the average U.S. person**. 
 
 ---
 
@@ -29,12 +29,9 @@ Common diet guidance is often population-level (“eat more vegetables”) and d
 - **NHANES (August 2021 – August 2023)** dietary intake data.
 
 ### Files used (current + planned)
-- Dietary totals: **DR1TOT_L** (and maybe DR2TOT_L) 
-- Individual foods: **DR1IFF_L** (and maybe DR2IFF_L)
-- Optional validation sources (future scope): body measures and lab data
-
-### Weights (population-representative analysis)
-- **TBD**
+- Dietary totals: **DR1TOT_L**
+- Individual foods: **DR1IFF_L**
+- Planned: Optional validation sources (future scope) - body measures and lab data
 
 ---
 
@@ -49,14 +46,12 @@ Common diet guidance is often population-level (“eat more vegetables”) and d
 - Selects a compact set of dietary variables that best capture nutrition patterns (e.g., energy, macro totals, sugar/fiber/sodium, key micronutrients).   
 - Handles missingness + removes low-response variables to avoid instability.
 
-### 3) Dimensionality reduction (PCA)
-- Applies PCA to reduce the nutrient feature space before clustering.  
+### 3) Normalization
+- Converst nutrients to densities and use z-scores to normalize feature lenghts.  
 
 ### 4) Clustering
 - **K-means** in PCA-reduced nutrient space.  
-- Chooses K using:
-  - within-cluster sum of squares (elbow)
-  - silhouette score for cohesion  
+- Chooses K based on sillhouette score.
 
 ### 5) Cluster analysis + recommendation layer
 - Summarizes clusters using centroid nutrient profiles.
@@ -68,4 +63,4 @@ Common diet guidance is often population-level (“eat more vegetables”) and d
 
 ---
 
-Data Source : https://wwwn.cdc.gov/nchs/nhanes/search/datapage.aspx?Component=Dietary&Cycle=2021-2023 ; DR1IFF_L Doc
+Data Source : https://wwwn.cdc.gov/nchs/nhanes/search/datapage.aspx?Component=Dietary&Cycle=2021-2023
