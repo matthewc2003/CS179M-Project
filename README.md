@@ -62,5 +62,28 @@ Most Americans don't know how their diet compares to others and assume their die
 - Returns cluster-informed insights and recommendations. 
 
 ---
+## Tech Stack
+- **Pandas** – data manipulation, cleaning, and analysis  
+- **NumPy** – numerical computation and array operations  
+- **Scikit-learn** – machine learning algorithms including K-Means clustering and silhouette analysis  
+- **Matplotlib** – core data visualization and plotting  
+- **Seaborn** – statistical data visualization and enhanced plotting  
+- **Streamlit** – interactive web application interface for the project  
+- **Joblib** – saving and loading models/pipelines for data transfer
+
+## Repository Structure
+CS179M-Project/
+│
+├── data/           # Datasets used for analysis and clustering
+├── notebooks/      # Early experimentation and exploratory analysis
+├── src/            # Main Python scripts and project logic
+└── README.md       # Project documentation
+
+## Running the App
+1. Install **Python** from https://www.python.org/downloads/
+2. Download or Clone this Repository
+3. Navigate to .../CS179M-Project/src/ and open a terminal
+4. Run the streamlit app with **python3 streamlit -m run diet_app.py**
+5. The app will automatically open in your web browser.
 
 Data Source : https://wwwn.cdc.gov/nchs/nhanes/search/datapage.aspx?Component=Dietary&Cycle=2021-2023
