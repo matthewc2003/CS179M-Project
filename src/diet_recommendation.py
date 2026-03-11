@@ -7,11 +7,11 @@ import pandas as pd
 # Note there is a LOT of nuance here based on the user. For example, a very active person may have a higher calorie intake and thus higher absolute nutrient intakes, but their nutrient densities could still be healthy.
 # In this case, we are using general population-level guidelines for a 2000 kcal diet, which is a common reference point. Future improvement could be to personalize this based on user characteristics.
 healthy_reference = {
-    "Sugar_per_1000kcal": 25, # grams per 1000 https://www.fda.gov/food/nutrition-facts-label/added-sugars-nutrition-facts-label?utm_source=chatgpt.com
-    "Fiber_per_1000kcal": 14, # grams per 1000 https://www.health.harvard.edu/blog/should-i-be-eating-more-fiber-2019022115927#:~:text=Fiber:%20how%20much%20is%20enough,and%2030%20daily%20grams%2C%20respectively.
-    "Sodium_per_1000kcal": 1500, # mg per 1000 https://www.heart.org/en/healthy-living/healthy-eating/eat-smart/sodium/how-much-sodium-should-i-eat-per-day
-    "SatFat_per_1000kcal": 10, # grams per 1000 https://odphp.health.gov/sites/default/files/2019-10/DGA_Cut-Down-On-Saturated-Fats.pdf
-    "Protein_per_1000kcal": 50 # grams per 1000 https://www.unitypoint.org/news-and-articles/how-much-protein-do-you-need-daily-ideal-protein-intake-for-muscle-growth-weight-loss-and-managing-chronic-conditions
+    "Sugar_per_1000kcal": (0, 25), # grams per 1000 https://www.fda.gov/food/nutrition-facts-label/added-sugars-nutrition-facts-label?utm_source=chatgpt.com
+    "Fiber_per_1000kcal": (14, 40), # grams per 1000 https://www.health.harvard.edu/blog/should-i-be-eating-more-fiber-2019022115927#:~:text=Fiber:%20how%20much%20is%20enough,and%2030%20daily%20grams%2C%20respectively.
+    "Sodium_per_1000kcal": (0, 1500), # mg per 1000 https://www.heart.org/en/healthy-living/healthy-eating/eat-smart/sodium/how-much-sodium-should-i-eat-per-day
+    "SatFat_per_1000kcal": (0,10), # grams per 1000 https://odphp.health.gov/sites/default/files/2019-10/DGA_Cut-Down-On-Saturated-Fats.pdf
+    "Protein_per_1000kcal": (30, 45) # grams per 1000 https://www.unitypoint.org/news-and-articles/how-much-protein-do-you-need-daily-ideal-protein-intake-for-muscle-growth-weight-loss-and-managing-chronic-conditions
 }
 
 healthy_direction = {
@@ -103,21 +103,18 @@ def generate_recommendation(
         direction = healthy_direction[nutrient]
         guideline_value = healthy_reference[nutrient]
 
-        diff = value - guideline_value
-        threshold = guideline_value * 0.1 # 10% threshold for significant deviation
-        
-        if direction == "lower":
-            if diff > threshold:
+        for nutrient, value in nutrient_values.items():
+
+            lower, upper = healthy_reference[nutrient]
+
+            if value < lower:
+                status = "below recommended level"
+            elif value > upper:
                 status = "above recommended level"
             else:
                 status = "within recommended range"
-        elif direction == "higher":
-            if diff < -threshold:
-                status = "below recommended level"
-            else:
-                status = "within recommended range"
 
-        guideline_results[nutrient] = status
+            guideline_results[nutrient] = status
 
     advice_lines = []
 
