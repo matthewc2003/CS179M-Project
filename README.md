@@ -84,7 +84,7 @@ CS179M-Project/
 1. Install **Python** from https://www.python.org/downloads/
 2. Download or Clone this Repository
 3. Navigate to .../CS179M-Project/src/ and open a terminal
-4. Run the streamlit app by typing: **python3 streamlit -m run diet_app.py** in the terminal
+4. Run the streamlit app by typing: **python3 -m streamlit run diet_app.py** in the terminal
 5. The app will automatically open in your web browser.
 
 Data Source : https://wwwn.cdc.gov/nchs/nhanes/search/datapage.aspx?Component=Dietary&Cycle=2021-2023
