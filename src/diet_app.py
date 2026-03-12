@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import altair as alt
 from diet_recommendation import generate_recommendation
 import random
 
@@ -119,8 +120,6 @@ if st.button("Estimate Intake from Questionnaire"):
     st.success("Estimated intake values have been populated in the input fields below. You can adjust them if needed before analysis.")
 
 
-st.header("Daily Intake Estimation")
-
 if "estimated" in st.session_state and st.session_state.estimated:
     st.divider()
     st.subheader("Adjust Your Estimated Intake")
@@ -180,7 +179,7 @@ if "estimated" in st.session_state and st.session_state.estimated:
         user_density = {
             "Sugar": sugar / calories * 1000,
             "Fiber": fiber / calories * 1000,
-            "Sodium": (sodium / calories * 1000) / 1000, # convert mg to g for better visualization
+            "Sodium": (sodium / 1000) / calories * 1000, # convert mg to g for better visualization
             "SatFat": satfat / calories * 1000,
             "Protein": protein / calories * 1000
         }
@@ -192,13 +191,23 @@ if "estimated" in st.session_state and st.session_state.estimated:
             "SatFat": 10,    # g per 1000 kcal
             "Protein": 50    # g per 1000 kcal
         }
-
+        
         df = pd.DataFrame({
             "Your Intake (g/1000 kcal)": user_density,
             "Recommended (g/1000 kcal)": healthy_density
         })
+        df_reset = df.reset_index().melt(id_vars="index")
 
-        st.bar_chart(df)
+        chart = alt.Chart(df_reset).mark_bar().encode(
+            x=alt.X("variable:N", title=""),
+            y=alt.Y("value:Q", title="g per 1000 kcal"),
+            color="variable:N"
+        ).facet(
+            column=alt.Column("index:N", title="Nutrient")
+        )
+
+        st.altair_chart(chart, width="stretch")
+        # st.bar_chart(df)
         st.caption("Note: Sodium is shown in grams per 1000 kcal for better visualization.")
 
         # st.divider()
